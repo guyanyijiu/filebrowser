@@ -63,6 +63,7 @@ func addServerFlags(flags *pflag.FlagSet) {
 	flags.String("socket", "", "socket to listen to (cannot be used with address, port, cert nor key flags)")
 	flags.Uint32("socket-perm", 0666, "unix socket file permissions") //nolint:gomnd
 	flags.StringP("baseurl", "b", "", "base url")
+	flags.StringP("domain", "", "", "domain")
 	flags.String("cache-dir", "", "file cache directory (disabled if empty)")
 	flags.Int("img-processors", 4, "image processors count") //nolint:gomnd
 	flags.Bool("disable-thumbnails", false, "disable image thumbnails")
@@ -207,6 +208,10 @@ func getRunParams(flags *pflag.FlagSet, st *storage.Storage) *settings.Server {
 		server.BaseURL = val
 	}
 
+	if val, set := getParamB(flags, "domain"); set {
+		server.Domain = val
+	}
+
 	if val, set := getParamB(flags, "log"); set {
 		server.Log = val
 	}
@@ -347,6 +352,7 @@ func quickSetup(flags *pflag.FlagSet, d pythonData) {
 
 	ser := &settings.Server{
 		BaseURL: getParam(flags, "baseurl"),
+		Domain:  getParam(flags, "domain"),
 		Port:    getParam(flags, "port"),
 		Log:     getParam(flags, "log"),
 		TLSKey:  getParam(flags, "key"),

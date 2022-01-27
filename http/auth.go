@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -85,6 +86,8 @@ func withUser(fn handleFunc) handleFunc {
 		if err != nil {
 			return http.StatusInternalServerError, err
 		}
+		url, _ := url.PathUnescape(r.URL.String())
+		log.Printf("INFO %s %s %s", d.user.Username, r.RemoteAddr, url)
 		return fn(w, r, d)
 	}
 }

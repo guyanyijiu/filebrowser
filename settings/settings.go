@@ -30,6 +30,7 @@ func (s *Settings) GetRules() []rules.Rule {
 
 // Server specific settings.
 type Server struct {
+	Domain                string `json:"domain"`
 	Root                  string `json:"root"`
 	BaseURL               string `json:"baseURL"`
 	Socket                string `json:"socket"`

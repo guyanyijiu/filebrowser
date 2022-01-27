@@ -27,12 +27,22 @@ func NewHandler(
 	r := mux.NewRouter()
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if server.Domain != "" && server.Domain != r.Host {
+				w.WriteHeader(444)
+				return
+			}
 			w.Header().Set("Content-Security-Policy", `default-src 'self'`)
 			next.ServeHTTP(w, r)
 		})
 	})
 	index, static := getStaticHandlers(store, server, assetsFs)
-
+	indexNew := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if server.Domain != "" && server.Domain != r.Host {
+			w.WriteHeader(444)
+			return
+		}
+		index.ServeHTTP(w, r)
+	})
 	// NOTE: This fixes the issue where it would redirect if people did not put a
 	// trailing slash in the end. I hate this decision since this allows some awful
 	// URLs https://www.gorillatoolkit.org/pkg/mux#Router.SkipClean
@@ -44,7 +54,7 @@ func NewHandler(
 
 	r.HandleFunc("/health", healthHandler)
 	r.PathPrefix("/static").Handler(static)
-	r.NotFoundHandler = index
+	r.NotFoundHandler = indexNew
 
 	api := r.PathPrefix("/api").Subrouter()
 
