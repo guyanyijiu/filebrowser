@@ -87,7 +87,7 @@ func withUser(fn handleFunc) handleFunc {
 			return http.StatusInternalServerError, err
 		}
 		url, _ := url.PathUnescape(r.URL.String())
-		log.Printf("INFO %s %s %s", d.user.Username, r.RemoteAddr, url)
+		log.Printf("| %s | %s | %s | %s", d.user.Username, url, r.RemoteAddr, r.UserAgent())
 		return fn(w, r, d)
 	}
 }
