@@ -45,6 +45,16 @@
         </button>
 
         <button
+          class="action"
+          @click="toAriaNg"
+          :aria-label="'AriaNg'"
+          :title="'AriaNg'"
+        >
+          <i class="material-icons">settings_applications</i>
+          <span>AriaNg</span>
+        </button>
+
+        <button
           v-if="authMethod == 'json'"
           @click="logout"
           class="action"
@@ -131,6 +141,14 @@ export default {
     },
     toSettings() {
       this.$router.push({ path: "/settings" }, () => {});
+      this.$store.commit("closeHovers");
+    },
+    toAriaNg() {
+      // let ariaNgUrl = this.$router.resolve({
+      //   path: "/AriaNg/",
+      // });
+      // window.open(ariaNgUrl.href, "_blank");
+      this.$router.push({ path: "/ariang" }, () => {});
       this.$store.commit("closeHovers");
     },
     help() {

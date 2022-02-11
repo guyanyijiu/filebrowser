@@ -1,0 +1,4 @@
+[submodule "AriaNg"]
+	path = AriaNg
+	url = git@github.com:guyanyijiu/AriaNg.git
+	branch = dev

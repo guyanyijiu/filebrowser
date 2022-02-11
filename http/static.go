@@ -149,3 +149,18 @@ func getStaticHandlers(store *storage.Storage, server *settings.Server, assetsFs
 
 	return index, static
 }
+
+func getAriaNgHandlers(store *storage.Storage, server *settings.Server, ariaNgFs fs.FS) http.Handler {
+	return handle(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
+		if r.Method != http.MethodGet {
+			return http.StatusNotFound, nil
+		}
+
+		const maxAge = 86400 // 1 day
+		w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%v", maxAge))
+
+		http.FileServer(http.FS(ariaNgFs)).ServeHTTP(w, r)
+		return 0, nil
+
+	}, "/AriaNg/", store, server)
+}

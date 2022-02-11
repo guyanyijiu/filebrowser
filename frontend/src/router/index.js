@@ -4,6 +4,7 @@ import Login from "@/views/Login";
 import Layout from "@/views/Layout";
 import Files from "@/views/Files";
 import Share from "@/views/Share";
+import AriaNg from "@/views/AriaNg";
 import Users from "@/views/settings/Users";
 import User from "@/views/settings/User";
 import Settings from "@/views/Settings";
@@ -46,6 +47,14 @@ const router = new Router({
           path: "/files/*",
           name: "Files",
           component: Files,
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: "/ariang",
+          name: "AriaNg",
+          component: AriaNg,
           meta: {
             requiresAuth: true,
           },

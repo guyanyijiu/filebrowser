@@ -21,6 +21,7 @@ func NewHandler(
 	store *storage.Storage,
 	server *settings.Server,
 	assetsFs fs.FS,
+	ariaNgFs fs.FS,
 ) (http.Handler, error) {
 	server.Clean()
 
@@ -54,6 +55,7 @@ func NewHandler(
 
 	r.HandleFunc("/health", healthHandler)
 	r.PathPrefix("/static").Handler(static)
+	r.PathPrefix("/AriaNg").Handler(getAriaNgHandlers(store, server, ariaNgFs))
 	r.NotFoundHandler = indexNew
 
 	api := r.PathPrefix("/api").Subrouter()
