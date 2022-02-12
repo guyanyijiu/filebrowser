@@ -19,7 +19,7 @@ import { mapState } from "vuex";
 import HeaderBar from "@/components/header/HeaderBar";
 
 export default {
-  name: "ariang",
+  name: "AriaNg",
   components: {
     HeaderBar,
   },

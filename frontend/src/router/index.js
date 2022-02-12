@@ -52,7 +52,7 @@ const router = new Router({
           },
         },
         {
-          path: "/ariang",
+          path: "/download",
           name: "AriaNg",
           component: AriaNg,
           meta: {

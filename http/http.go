@@ -64,6 +64,8 @@ func NewHandler(
 	api.Handle("/signup", monkey(signupHandler, ""))
 	api.Handle("/renew", monkey(renewHandler, ""))
 
+	api.Handle("/aria2/jsonrpc", monkey(aria2Handler, "")).Methods("POST")
+
 	users := api.PathPrefix("/users").Subrouter()
 	users.Handle("", monkey(usersGetHandler, "")).Methods("GET")
 	users.Handle("", monkey(userPostHandler, "")).Methods("POST")

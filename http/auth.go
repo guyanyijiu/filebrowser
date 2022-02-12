@@ -87,7 +87,9 @@ func withUser(fn handleFunc) handleFunc {
 			return http.StatusInternalServerError, err
 		}
 		url, _ := url.PathUnescape(r.URL.String())
-		log.Printf("| %s | %s | %s | %s", d.user.Username, url, r.RemoteAddr, r.UserAgent())
+		if url != "/api/aria2/jsonrpc" {
+			log.Printf("| %s | %s | %s | %s", d.user.Username, url, r.RemoteAddr, r.UserAgent())
+		}
 		return fn(w, r, d)
 	}
 }

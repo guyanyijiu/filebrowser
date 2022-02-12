@@ -47,11 +47,11 @@
         <button
           class="action"
           @click="toAriaNg"
-          :aria-label="'AriaNg'"
-          :title="'AriaNg'"
+          :aria-label="$t('buttons.download')"
+          :title="$t('buttons.download')"
         >
-          <i class="material-icons">settings_applications</i>
-          <span>AriaNg</span>
+          <i class="material-icons">cloud_download</i>
+          <span>{{ $t("buttons.download") }}</span>
         </button>
 
         <button
@@ -144,11 +144,7 @@ export default {
       this.$store.commit("closeHovers");
     },
     toAriaNg() {
-      // let ariaNgUrl = this.$router.resolve({
-      //   path: "/AriaNg/",
-      // });
-      // window.open(ariaNgUrl.href, "_blank");
-      this.$router.push({ path: "/ariang" }, () => {});
+      this.$router.push({ path: "/download" }, () => {});
       this.$store.commit("closeHovers");
     },
     help() {
