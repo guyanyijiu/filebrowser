@@ -15,6 +15,7 @@ const (
 	EventPlay   = 1
 	EventPause  = 2
 	EventSeeked = 3
+	EventJoin   = 4
 )
 
 type VideoEvent struct {

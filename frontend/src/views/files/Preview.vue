@@ -226,6 +226,8 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener("keydown", this.key);
+  },
+  destroyed() {
     if (this.syncPlayer) {
       this.syncPlayer.dispose();
     }
