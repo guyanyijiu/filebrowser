@@ -151,6 +151,7 @@ import throttle from "lodash.throttle";
 import HeaderBar from "@/components/header/HeaderBar";
 import Action from "@/components/header/Action";
 import ExtendedImage from "@/components/files/ExtendedImage";
+import { SyncPlayer } from "@/utils/sync";
 
 const mediaTypes = ["image", "video", "audio", "blob"];
 
@@ -175,6 +176,7 @@ export default {
       autoPlay: false,
       previousRaw: "",
       nextRaw: "",
+      syncPlayer: null,
     };
   },
   computed: {
@@ -224,6 +226,9 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener("keydown", this.key);
+    if (this.syncPlayer) {
+      this.syncPlayer.dispose();
+    }
   },
   methods: {
     deleteFile() {
@@ -267,6 +272,10 @@ export default {
       }
     },
     async updatePreview() {
+      if (this.$refs.player) {
+        this.syncPlayer = new SyncPlayer(this.$refs.player);
+      }
+
       if (
         this.$refs.player &&
         this.$refs.player.paused &&
