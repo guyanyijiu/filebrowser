@@ -84,7 +84,7 @@
           you can <a :href="downloadUrl">download it</a>
           and watch it with your favorite video player!
         </video> -->
-        <Video v-else-if="req.type == 'video'" ref="player" :src="raw" />
+        <Video v-else-if="req.type == 'video'" :src="raw" />
         <object
           v-else-if="req.extension.toLowerCase() == '.pdf'"
           class="pdf"
@@ -122,7 +122,7 @@
       @click="prev"
       @mouseover="hoverNav = true"
       @mouseleave="hoverNav = false"
-      :class="{ hidden: !hasPrevious || !showNav }"
+      :class="{ hidden: !hasPrevious || !showNav || isVideo }"
       :aria-label="$t('buttons.previous')"
       :title="$t('buttons.previous')"
     >
@@ -132,7 +132,7 @@
       @click="next"
       @mouseover="hoverNav = true"
       @mouseleave="hoverNav = false"
-      :class="{ hidden: !hasNext || !showNav }"
+      :class="{ hidden: !hasNext || !showNav || isVideo }"
       :aria-label="$t('buttons.next')"
       :title="$t('buttons.next')"
     >
@@ -152,7 +152,6 @@ import throttle from "lodash.throttle";
 import HeaderBar from "@/components/header/HeaderBar";
 import Action from "@/components/header/Action";
 import ExtendedImage from "@/components/files/ExtendedImage";
-import { SyncPlayer } from "@/utils/sync";
 import Video from "./Video";
 
 const mediaTypes = ["image", "video", "audio", "blob"];
@@ -179,7 +178,6 @@ export default {
       autoPlay: false,
       previousRaw: "",
       nextRaw: "",
-      syncPlayer: null,
     };
   },
   computed: {
@@ -215,6 +213,9 @@ export default {
     isResizeEnabled() {
       return resizePreview;
     },
+    isVideo() {
+      return this.req.type === "video";
+    },
   },
   watch: {
     $route: function () {
@@ -229,11 +230,6 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener("keydown", this.key);
-  },
-  destroyed() {
-    if (this.syncPlayer) {
-      this.syncPlayer.dispose();
-    }
   },
   methods: {
     deleteFile() {
@@ -264,23 +260,19 @@ export default {
       if (this.show !== null) {
         return;
       }
-      const isNotVideo = this.req.type !== "video";
+
       if (event.which === 13 || event.which === 39) {
         // right arrow
-        if (this.hasNext && isNotVideo) this.next();
+        if (this.hasNext && !this.isVideo) this.next();
       } else if (event.which === 37) {
         // left arrow
-        if (this.hasPrevious && isNotVideo) this.prev();
+        if (this.hasPrevious && !this.isVideo) this.prev();
       } else if (event.which === 27) {
         // esc
         this.close();
       }
     },
     async updatePreview() {
-      if (this.$refs.player) {
-        this.syncPlayer = new SyncPlayer(this.$refs.player);
-      }
-
       if (
         this.$refs.player &&
         this.$refs.player.paused &&
