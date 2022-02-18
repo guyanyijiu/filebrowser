@@ -11,6 +11,7 @@
 <script>
 import videojs from "lc.video.js";
 import "lc.video.js/dist/video-js.min.css";
+import {SyncPlayer} from "@/utils/sync";
 
 export default {
   props: {
@@ -23,6 +24,7 @@ export default {
   data() {
     return {
       player: null,
+      syncPlayer: null,
     };
   },
 
@@ -119,8 +121,19 @@ export default {
       },
     };
 
+    videojs.registerPlugin('syncPlayer', SyncPlayer);
+
+    const playToggleClickHook = (player, event) => {
+        console.log(this.syncPlayer.connected());
+        console.log(player);
+        console.log(event);
+    }
+
+    videojs.controlHook('playToggleClick', playToggleClickHook);
+
     this.player = videojs(this.$refs.videojsPlayer, options, () => {
-      console.log("videojs ready.");
+      console.log("video player ready");
+      this.syncPlayer = new SyncPlayer(this.player);
     });
 
     // 记录播放进度
@@ -141,6 +154,10 @@ export default {
   },
 
   beforeDestroy() {
+    if (this.syncPlayer) {
+        this.syncPlayer.dispose();
+    }
+
     if (this.player) {
       this.player.dispose();
     }

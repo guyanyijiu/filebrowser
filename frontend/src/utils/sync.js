@@ -4,15 +4,16 @@ import store from "@/store";
 const ssl = window.location.protocol === "https:";
 const protocol = ssl ? "wss:" : "ws:";
 
-const eventPlay = 1;
-const eventPause = 2;
-const eventSeeked = 3;
-const eventJoin = 4;
+const EventPlay        = 1;
+const EventPause       = 2;
+const EventSeeked      = 3;
+const EventJoin        = 4;
+// const EventUserOffline = 9;
 
 export class SyncPlayer {
     constructor(player) {
         this.player = player;
-        this.currentTime = 0;
+
         this.userId = store.state.user.id;
 
         let url = `${protocol}//${window.location.host}${baseURL}/api/sync_video?auth=${store.state.jwt}`;
@@ -22,16 +23,18 @@ export class SyncPlayer {
         this.conn.onerror = this.connError;
         this.conn.onmessage = this.connMessage;
         this.conn.onclose = this.connClose;
+    }
 
-        this.startListener();
+    connected() {
+        return this.conn.readyState === 1
     }
 
     log(msg) {
         console.log(this.player.currentTime, "---", msg);
     }
     connOpen = () => {
-        this.log("ws connected");
-        this.sendEvent(eventJoin);
+        this.log("sync player connected");
+        this.sendEvent(EventJoin);
     }
     connError = () => {
         this.log("ws error");
@@ -52,60 +55,29 @@ export class SyncPlayer {
             return;
         }
         switch (event.e) {
-            case eventPlay:
+            case EventPlay:
                 this.player.play();
                 break;
-            case eventPause:
+            case EventPause:
                 this.player.pause();
                 break;
-            case eventSeeked:
-                this.player.currentTime = event.ct;
+            case EventSeeked:
+                this.player.currentTime(event.vt);
                 break;
-            case eventJoin:
-                this.sendEvent(eventSeeked);
+            case EventJoin:
+                this.sendEvent(EventSeeked);
                 break
         }
     }
 
     sendEvent(event) {
-        if (this.conn.readyState !== 1) {
+        if (!this.connected()) {
             console.log("conn no ready");
             return;
         }
-        let msg = JSON.stringify({ "uid": this.userId, "e": event, "ct": this.player.currentTime, "ts": new Date().getTime() });
+        let msg = JSON.stringify({ "uid": this.userId, "e": event, "vt": this.player.currentTime(), "et": new Date().getTime() });
         this.conn.send(msg);
         this.log(msg);
-    }
-
-    startListener() {
-        this.player.addEventListener("canplay", () => {
-            this.log("canplay");
-        });
-        this.player.addEventListener("play", (e) => {
-            this.log("play");
-            console.log(e);
-            this.sendEvent(eventPlay);
-        });
-        this.player.addEventListener("ended", () => {
-            this.log("ended");
-        });
-        this.player.addEventListener("pause", () => {
-            this.log("pause");
-            this.sendEvent(eventPause);
-        });
-        this.player.addEventListener("seeking", () => {
-            this.log("seeking");
-        });
-        this.player.addEventListener("seeked", () => {
-            this.log("seeked");
-            this.sendEvent(eventSeeked);
-        });
-        this.player.addEventListener("waiting", () => {
-            this.log("waiting");
-        });
-        // this.player.addEventListener("timeupdate", () => {
-        //     this.log("timeupdate");
-        // });
     }
 
     dispose() {
