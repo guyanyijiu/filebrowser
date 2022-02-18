@@ -9,8 +9,8 @@
 </template>
 
 <script>
-import videojs from "video.js";
-import "video.js/dist/video-js.min.css";
+import videojs from "lc.video.js";
+import "lc.video.js/dist/video-js.min.css";
 
 export default {
   props: {
@@ -129,9 +129,10 @@ export default {
       if (ct > 0) {
         return;
       }
+      const duration = this.player.duration();
       const t = this.getLocalProgress();
-      if (t > 0) {
-        this.player.currentTime(t);
+      if (t > 1 && t < duration) {
+        this.player.currentTime(t-1);
       }
     });
     this.player.on("timeupdate", () => {
@@ -147,8 +148,11 @@ export default {
 
   methods: {
     getLocalProgress() {
-      const t = localStorage.getItem(this.localProgressKey) || 0;
-      return Math.max(t - 1, 0);
+      const t = localStorage.getItem(this.localProgressKey);
+      if (!t) {
+          return 0;
+      }
+      return t;
     },
     setLocalProgress(t) {
       localStorage.setItem(this.localProgressKey, t);
