@@ -11,7 +11,7 @@
 <script>
 import videojs from "lc.video.js";
 import "lc.video.js/dist/video-js.min.css";
-import {SyncPlayer} from "@/utils/sync";
+import { SyncPlayer } from "@/utils/sync";
 
 export default {
   props: {
@@ -121,23 +121,23 @@ export default {
       },
     };
 
-    videojs.registerPlugin('syncPlayer', SyncPlayer);
+    this.syncPlayer = new SyncPlayer();
 
-    const playToggleClickHook = (player, event) => {
-        console.log(this.syncPlayer.connected());
-        console.log(player);
-        console.log(event);
-    }
-
-    videojs.controlHook('playToggleClick', playToggleClickHook);
+    videojs.controlHook(
+      "playToggleClick",
+      this.syncPlayer.makePlayToggleClickHook()
+    );
 
     this.player = videojs(this.$refs.videojsPlayer, options, () => {
       console.log("video player ready");
-      this.syncPlayer = new SyncPlayer(this.player);
+      this.syncPlayer.start(this.player);
     });
 
     // 记录播放进度
     this.player.on("play", () => {
+      if (this.syncPlayer.syncMode) {
+        return;
+      }
       const ct = this.player.currentTime();
       if (ct > 0) {
         return;
@@ -145,7 +145,7 @@ export default {
       const duration = this.player.duration();
       const t = this.getLocalProgress();
       if (t > 1 && t < duration) {
-        this.player.currentTime(t-1);
+        this.player.currentTime(t - 1);
       }
     });
     this.player.on("timeupdate", () => {
@@ -155,7 +155,7 @@ export default {
 
   beforeDestroy() {
     if (this.syncPlayer) {
-        this.syncPlayer.dispose();
+      this.syncPlayer.dispose();
     }
 
     if (this.player) {
@@ -167,7 +167,7 @@ export default {
     getLocalProgress() {
       const t = localStorage.getItem(this.localProgressKey);
       if (!t) {
-          return 0;
+        return 0;
       }
       return t;
     },
@@ -183,5 +183,11 @@ export default {
   display: block;
   padding-left: 0em;
   padding-right: 0em;
+}
+.video-js .vjs-big-play-button {
+  display: none;
+}
+.video-js .vjs-control-bar {
+  display: flex;
 }
 </style>

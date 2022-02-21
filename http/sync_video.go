@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"sync"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -13,19 +12,20 @@ import (
 var conns = make(map[uint]*websocket.Conn)
 var connsLock = &sync.RWMutex{}
 
-const (
-	EventPlay        = 1
-	EventPause       = 2
-	EventSeeked      = 3
-	EventJoin        = 4
-	EventUserOffline = 9
-)
+const EventPlay = 1
+const EventDelayPlay = 2
+const EventPause = 3
+const EventSeekPlay = 4
+const EventSeekPause = 5
+const EventSyncOpen = 8
+const EventSyncClose = 9
 
 type VideoEvent struct {
-	E   int   `json:"e"`
-	Vt  int64 `json:"vt"`  // 视频当前播放时间
-	Et  int64 `json:"et"`  // 事件触发事件
-	Uid uint  `json:"uid"` // 事件触发用户ID
+	E   int     `json:"e"`
+	Vt  float64 `json:"vt"`  // 视频当前播放时间
+	Et  int64   `json:"et"`  // 事件触发事件
+	Uid uint    `json:"uid"` // 事件触发用户ID
+	Dt  int64   `json:"dt"`
 }
 
 var syncVideoHandler = withUser(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
@@ -39,6 +39,30 @@ var syncVideoHandler = withUser(func(w http.ResponseWriter, r *http.Request, d *
 
 	connsLock.Lock()
 	conns[userId] = conn
+	if len(conns) > 1 {
+		evt := &VideoEvent{
+			E: EventSyncOpen,
+		}
+		evtMsg, _ := json.Marshal(evt)
+		for id, c := range conns {
+			if err := c.WriteMessage(websocket.TextMessage, evtMsg); err != nil {
+				c.Close()
+				delete(conns, id)
+			}
+		}
+	}
+	if len(conns) <= 1 {
+		evt := &VideoEvent{
+			E: EventSyncClose,
+		}
+		evtMsg, _ := json.Marshal(evt)
+		for id, c := range conns {
+			if err := c.WriteMessage(websocket.TextMessage, evtMsg); err != nil {
+				c.Close()
+				delete(conns, id)
+			}
+		}
+	}
 	connsLock.Unlock()
 
 	for {
@@ -48,10 +72,7 @@ var syncVideoHandler = withUser(func(w http.ResponseWriter, r *http.Request, d *
 			connsLock.Lock()
 			delete(conns, userId)
 			evt := &VideoEvent{
-				E:   EventUserOffline,
-				Vt:  0,
-				Et:  time.Now().UnixMilli(),
-				Uid: userId,
+				E: EventSyncClose,
 			}
 			evtMsg, _ := json.Marshal(evt)
 			for id, c := range conns {
